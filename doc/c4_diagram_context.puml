@@ -1,0 +1,18 @@
+@startuml
+
+!include <C4/C4_Context>
+
+Person(user, "User")
+
+System(task_page, "Task Page")
+System(task_list, "Task List Page")
+System(tracker, "Task Tracker System")
+
+Rel(user, task_list, "Gets task list, applies filters")
+Rel(user, task_page, "Gets task information: details, likes, comments, statictics")
+Rel(user, tracker, "Uses")
+Rel(task_list, tracker, "Uses")
+Rel(task_page, tracker, "Uses")
+
+@enduml
+
