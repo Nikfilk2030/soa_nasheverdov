@@ -1,0 +1,35 @@
+@startuml
+
+hide circle
+
+skinparam linetype ortho
+
+entity "User" as user {
+    userid : int
+    username : string
+}
+
+entity "Task" as task {
+    taskid : int
+    title: string
+    text: string
+}
+
+entity "Comment" as comment {
+    commentid : int
+    parent_taskid: int
+    content: string
+}
+
+entity "Like" as like {
+    parent_taskid: int
+    userid: int
+}
+
+user ||--o{ task : "Creates, updates, deletes"
+user ||--o{ like : "Gives"
+task ||--o{ comment : "Has"
+task ||--o{ like : "Receives"
+like ||--o{ comment : "Leaves"
+
+@enduml

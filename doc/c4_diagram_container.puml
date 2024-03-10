@@ -1,0 +1,29 @@
+@startuml
+
+skinparam defaultTextAlignment center
+
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+
+Person(user, "User")
+
+System(main_front, "Main front", "Jango")
+System(main, "Main Backend", "Python")
+System(stats, "Statistics", "Python")
+System(data, "Posts/Task Service", "Python")
+ContainerDb(user_data, "Main Database", "PostgreSQL")
+ContainerDb(obj_data, "Posts/Task Database", "PostgreSQL")
+ContainerDb(stats_data, "Statistics Database", "ClickHouse")
+ContainerQueue(queue, "Statistics", "Kafka")
+
+Rel(user, main_front, "Uses")
+Rel(main_front, main, "REST")
+Rel(main, data, "gRPC")
+Rel(main, stats, "Sends events to message broker for likes and views", "gRPC")
+Rel(main, queue, "Sends events")
+Rel(queue, stats, "Publishes events")
+Rel(main, user_data, "SQL")
+Rel(stats, stats_data, "SQL")
+Rel(data, obj_data, "SQL")
+
+@enduml
