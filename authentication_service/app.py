@@ -1,4 +1,5 @@
 import base64
+import hashlib
 
 from flask import Flask, request
 from flask_restx import Api, Resource, fields
@@ -33,10 +34,18 @@ update_model = api.model('UpdateUser', {
 })
 
 
+def hash_password(password: str) -> str:
+    return hashlib.md5(password.encode()).hexdigest()
+
+
+def verify_password(input_password: str, stored_hashed_password: str) -> bool:
+    return hashlib.md5(input_password.encode()).hexdigest() == stored_hashed_password
+
+
 def verify_user(username: str, password: str) -> bool:
     user = get_user(username)
 
-    return user and user[2] == password
+    return user and verify_password(input_password=user[2], stored_hashed_password=password)
 
 
 @api.route('/register')
@@ -45,7 +54,7 @@ class Register(Resource):
     def post(self):
         data = request.json
         username = data.get("username")
-        password = data.get("password")
+        password = hash_password(data.get("password"))
 
         if get_user(username):
             return {'message': 'User already exists'}, 400
@@ -69,7 +78,7 @@ class Auth(Resource):
     def post(self):
         data = request.json
         username = data.get('username')
-        password = data.get('password')
+        password = hash_password(data.get('password'))
 
         if verify_user(username, password):
             return {'message': 'User successfully authenticated'}, 200
@@ -88,6 +97,7 @@ class UpdateUser(Resource):
         base64_creds = auth_header.split(' ')[1]
         creds = base64.b64decode(base64_creds).decode('utf-8')
         username, password = creds.split(':')
+        password = hash_password(password)
 
         if not verify_user(username, password):
             return {'message': 'Unauthorized, check login credentials'}, 401
