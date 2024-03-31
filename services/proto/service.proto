@@ -6,7 +6,7 @@ service TaskService {
   rpc CreateTask(Task) returns (TaskResponse);
   rpc UpdateTask(Task) returns (TaskResponse);
   rpc DeleteTask(TaskID) returns (DeleteResponse);
-  rpc GetTaskByID(TaskID) returns (Task);
+  rpc GetTaskByID(TaskID) returns (TaskResponse);
   rpc GetTasks(PaginationParams) returns (TaskList);
 }
 
@@ -24,7 +24,7 @@ message TaskID {
 
 message TaskResponse {
   int32 status = 1;
-  Task task = 2;  // if needed?
+  Task task = 2;
 }
 
 message DeleteResponse {
@@ -32,10 +32,11 @@ message DeleteResponse {
 }
 
 message PaginationParams {
-  int32 page_number = 1;
-  int32 page_size = 2;
+  string page_number = 1;
+  string page_size = 2;
 }
 
 message TaskList {
-  repeated Task tasks = 1;
+  int32 status = 1;
+  repeated Task tasks = 2;
 }

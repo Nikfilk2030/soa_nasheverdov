@@ -32,7 +32,7 @@ class TaskServiceStub(object):
         self.GetTaskByID = channel.unary_unary(
                 '/rpc.TaskService/GetTaskByID',
                 request_serializer=service__pb2.TaskID.SerializeToString,
-                response_deserializer=service__pb2.Task.FromString,
+                response_deserializer=service__pb2.TaskResponse.FromString,
                 )
         self.GetTasks = channel.unary_unary(
                 '/rpc.TaskService/GetTasks',
@@ -95,7 +95,7 @@ def add_TaskServiceServicer_to_server(servicer, server):
             'GetTaskByID': grpc.unary_unary_rpc_method_handler(
                     servicer.GetTaskByID,
                     request_deserializer=service__pb2.TaskID.FromString,
-                    response_serializer=service__pb2.Task.SerializeToString,
+                    response_serializer=service__pb2.TaskResponse.SerializeToString,
             ),
             'GetTasks': grpc.unary_unary_rpc_method_handler(
                     servicer.GetTasks,
@@ -176,7 +176,7 @@ class TaskService(object):
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/rpc.TaskService/GetTaskByID',
             service__pb2.TaskID.SerializeToString,
-            service__pb2.Task.FromString,
+            service__pb2.TaskResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 

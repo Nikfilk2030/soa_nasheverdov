@@ -42,7 +42,7 @@ paths:
         '400':
           description: Bad request, check input data
 
-  /update:
+  /update_user:
     put:
       summary: Update user data
       security:
@@ -93,3 +93,121 @@ paths:
           description: User successfully authenticated
         '401':
           description: Unauthorized, check login credentials
+
+  /create_task:
+    post:
+      summary: Create Task
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+                content:
+                  type: string
+      responses:
+        '200':
+          description: Successfully created task
+        '401':
+          description: Unauthorized, check login credentials
+
+  /update_task:
+    post:
+      summary: Update Task
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+                task_id:
+                  type: string
+                content:
+                  type: string
+      responses:
+        '200':
+          description: Successfully updated task
+        '401':
+          description: Unauthorized, check login credentials
+
+  /delete_task:
+    post:
+      summary: Delete Task
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+                task_id:
+                  type: string
+      responses:
+        '200':
+          description: Successfully deleted task
+        '401':
+          description: Unauthorized, check login credential
+
+  /get_task_by_id:
+    get:
+      summary: Create Task
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+                task_id:
+                  type: string
+      responses:
+        '200':
+          description: Task retrieved successfully
+        '401':
+          description: Unauthorized, check login credentials
+        '404':
+          description: Task not found or error encountered
+
+  /get_tasks:
+    get:
+      summary: Create Task
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+                page_number:
+                  type: string
+                page_size:
+                  type: string
+      responses:
+        '200':
+          description: Tasks retrieved successfully
+        '401':
+          description: Unauthorized, check login credentials
+        '404':
+          description: Tasks not found or error encountered

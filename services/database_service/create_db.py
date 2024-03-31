@@ -34,11 +34,11 @@ def create_tasks():
     cursor.execute("DROP TABLE IF EXISTS tasks;")
     cursor.execute('''
         CREATE TABLE tasks (
-            id integer PRIMARY KEY,
-            username text,
-            content text,
-            date text,
-            tag text
+            id TEXT PRIMARY KEY,
+            username TEXT,
+            content TEXT,
+            date TEXT,
+            tag TEXT
         );
     ''')
 

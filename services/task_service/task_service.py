@@ -1,49 +1,85 @@
 import grpc
+import threading
 
 from concurrent import futures
 
+from google.protobuf.json_format import MessageToDict
+
+import services.task_service.database as database
 import services.proto.service_pb2_grpc as service_pb2_grpc
 import services.proto.service_pb2 as service_pb2
 
 
+class EStatus:
+    ERROR = 228
+    SUCCESS = 1337
+
+
 class TaskService(service_pb2_grpc.TaskServiceServicer):
+    def __init__(self):
+        self._lock = threading.Lock()
 
     def CreateTask(self, request, context):
-        print('bebra')
-        # Authentication and implement the logic to create a task
-        # INSERT INTO tasks (id, title, description, user_id) VALUES (?, ?, ?, ?)
-        return service_pb2.TaskResponse(status=228, task=request)
+        with self._lock:
+            request_dict = MessageToDict(request)
+            success = database.create_task(
+                task_id=request_dict['id'],
+                username=request_dict['username'],
+                content=request_dict['content'],
+                date=request_dict['date'],
+                tag=request_dict['tag']
+            )
+            if success:
+                return service_pb2.TaskResponse(status=EStatus.SUCCESS, task=request)
+            else:
+                return service_pb2.TaskResponse(status=EStatus.ERROR, task=service_pb2.Task())
 
     def UpdateTask(self, request, context):
-        # Authentication and implement the logic to update a task
-        # UPDATE tasks SET title=?, description=? WHERE id=? AND user_id=?
-        return service_pb2.TaskResponse(task=request)
+        with self._lock:
+            request_dict = MessageToDict(request)
+            success = database.update_task(
+                task_id=request_dict['id'],
+                content=request_dict['content'],
+                date=request_dict['date'],
+                tag=request_dict['tag']
+            )
+            if success:
+                return service_pb2.TaskResponse(status=EStatus.SUCCESS, task=request)
+            else:
+                return service_pb2.TaskResponse(status=EStatus.ERROR, task=service_pb2.Task())
 
     def DeleteTask(self, request, context):
-        # Authentication and implement the logic to delete a task
-        # DELETE FROM tasks WHERE id=? AND user_id=?
-        return service_pb2.DeleteResponse(success=True)
+        with self._lock:
+            request_dict = MessageToDict(request)
+            success = database.delete_task(task_id=request_dict['id'])
+            return service_pb2.DeleteResponse(success=success)
 
     def GetTaskByID(self, request, context):
-        # Authentication and implement the logic to get a task by ID
-        # SELECT * FROM tasks WHERE id=? AND user_id=?
-        return service_pb2.Task(id=request.id, title="Sample Title", description="Sample Description",
-                                user_id="User123")
+        with self._lock:
+            request_dict = MessageToDict(request)
+            success, task = database.get_task_by_id(task_id=request_dict['id'])
+            if success:
+                return service_pb2.TaskResponse(status=EStatus.SUCCESS, task=task)
+            else:
+                return service_pb2.TaskResponse(status=EStatus.ERROR, task=service_pb2.Task())
 
-    def GetTasksWithPagination(self, request, context):
-        # Implement the logic to get a list of tasks with pagination
-        # SELECT * FROM tasks LIMIT ? OFFSET ?
-        task_list = service_pb2.TaskList()
-        # Your code to populate task_list
-        return task_list
+    def GetTasks(self, request, context):
+        with self._lock:
+            request_dict = MessageToDict(request)
+
+            page_number = int(request_dict['pageNumber'])
+            page_size = int(request_dict['pageSize'])
+
+            tasks = database.get_tasks(page_number=page_number, page_size=page_size)
+            return tasks
 
 
 def serve():
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=100))
     service_pb2_grpc.add_TaskServiceServicer_to_server(TaskService(), server)
-    server.add_insecure_port('[::]:50051')
+    server.add_insecure_port('0.0.0.0:51075')
     server.start()
-    server.wait_for_termination()
+    server.wait_for_termination(timeout=None)
 
 
 if __name__ == '__main__':
