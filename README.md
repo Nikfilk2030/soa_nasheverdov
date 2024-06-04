@@ -38,17 +38,17 @@ $ curl -X POST http://localhost:5001/create_task \
 # test /update_task
 $ curl -X POST http://localhost:5001/update_task \
   -H "Content-Type: application/json" \
-  -d '{"username":"oleg","password":"tink","task_id":"1","content": "Yandex"}'
+  -d '{"username":"oleg","password":"tink","task_id": 1,"content": "Yandex"}'
 
 # test /delete_task
 $ curl -X POST http://localhost:5001/delete_task \
   -H "Content-Type: application/json" \
-  -d '{"username":"oleg","password":"tink","task_id":"1"}'
+  -d '{"username":"oleg","password":"tink","task_id": 1}'
   
 # test /get_task_by_id
 $ curl -X GET http://localhost:5001/get_task_by_id \
    -H "Content-Type: application/json" \
-   -d '{"username":"oleg","password":"tink","task_id": "2"}'
+   -d '{"username":"oleg","password":"tink","task_id": 2}'
    
 # test /get_tasks
 $ curl -X GET http://localhost:5001/get_tasks \

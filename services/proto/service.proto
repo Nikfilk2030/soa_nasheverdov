@@ -11,7 +11,7 @@ service TaskService {
 }
 
 message Task {
-  string id = 1;
+  int64 id = 1;
   string username = 2;
   string content = 3;
   string date = 4;
@@ -19,7 +19,7 @@ message Task {
 }
 
 message TaskID {
-  string id = 1;
+  int64 id = 1;
 }
 
 message TaskResponse {
@@ -32,8 +32,8 @@ message DeleteResponse {
 }
 
 message PaginationParams {
-  string page_number = 1;
-  string page_size = 2;
+  int64 page_number = 1;
+  int64 page_size = 2;
 }
 
 message TaskList {

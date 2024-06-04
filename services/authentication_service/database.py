@@ -2,6 +2,7 @@ import sqlite3
 import uuid
 
 DATABASE = '/data/users.db'
+CURRENT_USER_ID = 0
 
 
 def get_connection():
@@ -9,11 +10,14 @@ def get_connection():
 
 
 def create_user(username, password, firstName, lastName, dob, email, phoneNumber):
+    global CURRENT_USER_ID
+
     conn = get_connection()
     cursor = conn.cursor()
+    CURRENT_USER_ID += 1
     cursor.execute('''INSERT INTO users (id, username, password, firstName, lastName, dob, email, phoneNumber)
                       VALUES (?, ?, ?, ?, ?, ?, ?, ?)''',
-                   (str(uuid.uuid4()), username, password, firstName, lastName, dob, email, phoneNumber))
+                   (CURRENT_USER_ID, username, password, firstName, lastName, dob, email, phoneNumber))
     conn.commit()
     conn.close()
 

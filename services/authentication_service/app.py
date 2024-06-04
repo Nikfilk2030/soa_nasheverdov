@@ -17,7 +17,7 @@ import services.authentication_service.utils as utils
 app = Flask(__name__)
 api = Api(app, version='1.0', title='User Service API',
           description='SOA Nasheverdov project')
-CURRENT_ID = 0
+CURRENT_TASK_ID = 0
 
 TASK_CHANNEL = "task_service:51075"
 
@@ -141,11 +141,11 @@ class CreateTask(Resource):
         with grpc.insecure_channel(TASK_CHANNEL) as channel:
             stub = service_pb2_grpc.TaskServiceStub(channel)
 
-            global CURRENT_ID
-            CURRENT_ID += 1
+            global CURRENT_TASK_ID
+            CURRENT_TASK_ID += 1
 
             task = service_pb2.Task(
-                id=str(CURRENT_ID),
+                id=CURRENT_TASK_ID,
                 username=username,
                 content=data.get('content'),
                 date=iso_current_time,
@@ -165,7 +165,7 @@ class UpdateTask(Resource):
     update_task_model = api.model('UpdateTask', {
         'username': fields.String(required=True),
         'password': fields.String(required=True),
-        'task_id': fields.String(required=True),
+        'task_id': fields.Integer(required=True),
         'content': fields.String(required=True),
     })
 
@@ -236,7 +236,7 @@ class GetTaskByID(Resource):
     get_task_model = api.model('GetTask', {
         'username': fields.String(required=True),
         'password': fields.String(required=True),
-        'task_id': fields.String(required=True)
+        'task_id': fields.Integer(required=True)
     })
 
     @api.expect(get_task_model, validate=True)

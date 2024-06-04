@@ -23,7 +23,7 @@ def get_task_from_tuple(task_tuple):
     )
 
 
-def create_task(task_id: str, username: str, content: str, date: str, tag: str) -> bool:
+def create_task(task_id: int, username: str, content: str, date: str, tag: str) -> bool:
     try:
         conn = get_connection()
         cursor = conn.cursor()
@@ -39,7 +39,7 @@ def create_task(task_id: str, username: str, content: str, date: str, tag: str) 
         return False
 
 
-def update_task(task_id: str, content: str, date: str, tag: str) -> bool:
+def update_task(task_id: int, content: str, date: str, tag: str) -> bool:
     try:
         conn = get_connection()
         cursor = conn.cursor()
@@ -58,7 +58,7 @@ def update_task(task_id: str, content: str, date: str, tag: str) -> bool:
         return False
 
 
-def delete_task(task_id: str) -> bool:
+def delete_task(task_id: int) -> bool:
     try:
         conn = get_connection()
         cursor = conn.cursor()
@@ -74,7 +74,7 @@ def delete_task(task_id: str) -> bool:
         return False
 
 
-def get_task_by_id(task_id: str) -> (bool, service_pb2.Task):
+def get_task_by_id(task_id: int) -> (bool, service_pb2.Task):
     try:
         conn = get_connection()
         cursor = conn.cursor()

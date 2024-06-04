@@ -10,7 +10,7 @@ def create_users():
     cursor.execute("DROP TABLE IF EXISTS users;")
     cursor.execute('''
         CREATE TABLE users (
-            id TEXT PRIMARY KEY,
+            id INTEGER PRIMARY KEY,
             username TEXT UNIQUE NOT NULL,
             password TEXT NOT NULL,
             firstName TEXT NOT NULL,
@@ -34,7 +34,7 @@ def create_tasks():
     cursor.execute("DROP TABLE IF EXISTS tasks;")
     cursor.execute('''
         CREATE TABLE tasks (
-            id TEXT PRIMARY KEY,
+            id INTEGER PRIMARY KEY,
             username TEXT,
             content TEXT,
             date TEXT,
