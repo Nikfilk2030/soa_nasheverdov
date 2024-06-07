@@ -2,16 +2,30 @@ version: '3'
 
 services:
   authentication_service:
-    build: ./authentication_service
+    build:
+      context: ./services
+      dockerfile: authentication_service.Dockerfile
     ports:
       - "5001:5000"
     depends_on:
+      - task_service
       - database_service
     volumes:
       - db_data:/data
 
+  task_service:
+    build:
+      context: ./services
+      dockerfile: task_service.Dockerfile
+    ports:
+      - "51075:51075"
+    depends_on:
+      - database_service # in ideal world there are different db services
+    volumes:
+      - db_data:/data
+
   database_service:
-    build: ./database_service
+    build: services/database_service
     volumes:
       - db_data:/data
 

@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package rpc;
+
+service TaskService {
+  rpc CreateTask(Task) returns (TaskResponse);
+  rpc UpdateTask(Task) returns (TaskResponse);
+  rpc DeleteTask(TaskID) returns (DeleteResponse);
+  rpc GetTaskByID(TaskID) returns (TaskResponse);
+  rpc GetTasks(PaginationParams) returns (TaskList);
+}
+
+message Task {
+  int64 id = 1;
+  string username = 2;
+  string content = 3;
+  string date = 4;
+  string tag = 5;
+}
+
+message TaskID {
+  int64 id = 1;
+}
+
+message TaskResponse {
+  int32 status = 1;
+  Task task = 2;
+}
+
+message DeleteResponse {
+  bool success = 1;
+}
+
+message PaginationParams {
+  int64 page_number = 1;
+  int64 page_size = 2;
+}
+
+message TaskList {
+  int32 status = 1;
+  repeated Task tasks = 2;
+}
