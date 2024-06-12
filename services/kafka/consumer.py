@@ -1,8 +1,9 @@
-import sqlite3
 import json
-import kafka
-import time
 import logging
+import sqlite3
+import time
+
+import kafka
 
 
 def create_kafka_consumer():

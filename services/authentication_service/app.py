@@ -1,22 +1,22 @@
 import base64
 import json
-
-import grpc
 import time
-
 from datetime import datetime
 
-from flask import Flask, request, abort
-from flask_restx import Api, Resource, fields
-
+import grpc
+from flask import Flask
+from flask import request
+from flask_restx import Api
+from flask_restx import fields
+from flask_restx import Resource
 from google.protobuf.json_format import MessageToDict
 
-from kafka import KafkaProducer
-
-import services.proto.service_pb2_grpc as service_pb2_grpc
-import services.proto.service_pb2 as service_pb2
 import services.authentication_service.database as database
 import services.authentication_service.utils as utils
+import services.proto.service_pb2 as service_pb2
+import services.proto.service_pb2_grpc as service_pb2_grpc
+
+from services.kafka.producer import get_kafka_producer
 
 app = Flask(__name__)
 api = Api(app, version='1.0', title='User Service API',
@@ -31,16 +31,7 @@ class EStatus:
     SUCCESS = 1337
 
 
-def create_kafka_producer():  # TODO remove/rename
-    while True:
-        try:
-            producer = KafkaProducer(bootstrap_servers='kafka:9092')
-            return producer
-        except Exception:
-            time.sleep(5)
-
-
-KAFKA_PRODUCER = create_kafka_producer()
+KAFKA_PRODUCER = get_kafka_producer()
 
 
 @api.route('/register')
@@ -335,13 +326,12 @@ class SendLike(Resource):
         if not utils.verify_user(database, username, password):
             return {'message': 'Unauthorized, check login credentials'}, 401
 
-        # TODO validation of task_id?
+        # TODO validation that task_id exist?
 
-        # TODO not json to kafka?
         KAFKA_PRODUCER.send('json_topic', json.dumps(request.json).encode('utf-8'))
 
         return {
-            'message': 'Task liked successfully'
+            'message': 'Like succesfully sent to Kafka'
         }, 200
 
 

@@ -5,7 +5,7 @@ from flask import Flask, make_response
 
 import services.kafka.consumer as kafka_consumer  # TODO remove?
 
-DATABASE = '/data/users.db'  # TODO пока хардкодим, потом унести
+DATABASE = '/data/stats_data.db'  # TODO пока хардкодим, потом унести
 
 
 def get_connection():

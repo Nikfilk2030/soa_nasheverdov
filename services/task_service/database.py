@@ -1,8 +1,6 @@
 import sqlite3
-import uuid
 
 import services.proto.service_pb2 as service_pb2
-
 from services.task_service.task_service import EStatus
 
 DATABASE = '/data/tasks.db'
