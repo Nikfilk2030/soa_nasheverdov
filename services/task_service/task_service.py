@@ -1,13 +1,12 @@
-import grpc
 import threading
-
 from concurrent import futures
 
+import grpc
 from google.protobuf.json_format import MessageToDict
 
-import services.task_service.database as database
-import services.proto.service_pb2_grpc as service_pb2_grpc
 import services.proto.service_pb2 as service_pb2
+import services.proto.service_pb2_grpc as service_pb2_grpc
+import services.task_service.database as database
 
 
 class EStatus:

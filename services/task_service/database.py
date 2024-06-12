@@ -1,8 +1,6 @@
 import sqlite3
-import uuid
 
 import services.proto.service_pb2 as service_pb2
-
 from services.task_service.task_service import EStatus
 
 DATABASE = '/data/tasks.db'
@@ -120,4 +118,3 @@ def get_tasks(page_number: int, page_size: int) -> service_pb2.TaskList:
 
     except Exception as e:
         return service_pb2.TaskList(status=EStatus.ERROR)
-

@@ -1,5 +1,4 @@
 import sqlite3
-import uuid
 
 DATABASE = '/data/users.db'
 CURRENT_USER_ID = 0
