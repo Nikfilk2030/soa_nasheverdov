@@ -120,4 +120,3 @@ def get_tasks(page_number: int, page_size: int) -> service_pb2.TaskList:
 
     except Exception as e:
         return service_pb2.TaskList(status=EStatus.ERROR)
-

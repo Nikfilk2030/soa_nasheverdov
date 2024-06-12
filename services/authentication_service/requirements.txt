@@ -7,3 +7,4 @@ flask_restx==0.2.0
 protobuf==3.20.0
 grpcio==1.44.0
 grpcio-tools==1.44.0
+kafka-python

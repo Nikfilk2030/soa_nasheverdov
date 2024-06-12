@@ -54,4 +54,9 @@ $ curl -X GET http://localhost:5001/get_task_by_id \
 $ curl -X GET http://localhost:5001/get_tasks \
   -H "Content-Type: application/json" \
   -d '{"username":"oleg","password":"tink","page_number":"1","page_size":"10"}'
+  
+# test /send_like
+$ curl -X POST http://localhost:5001/send_like \
+  -H "Content-Type: application/json" \
+  -d '{"username":"oleg","password":"tink","task_id":2}'
 ```
