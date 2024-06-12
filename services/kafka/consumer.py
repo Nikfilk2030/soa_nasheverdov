@@ -6,6 +6,9 @@ import time
 import kafka
 
 
+KAFKA_SLEEP_TIME = 5  # seconds
+
+
 def create_kafka_consumer():
     while True:
         try:
@@ -20,21 +23,42 @@ def create_kafka_consumer():
             return consumer
         except Exception as e:
             logging.error(f"Error creating Kafka consumer: {e}")
-            time.sleep(5)
+            time.sleep(KAFKA_SLEEP_TIME)
+
+
+class EType:
+    Like = 1
+    View = 2
+
+
+def get_type(t: str) -> int:
+    if t == 'like':
+        return EType.Like
+    if t == 'view':
+        return EType.View
+    raise Exception('unknown EType in get_type')
+
+
+def is_like(t: int) -> bool:
+    return t == EType.Like
+
+
+def is_view(t: int) -> bool:
+    return t == EType.View
+
+
+def get_db_name(t: int) -> str:
+    if is_like(t):
+        return 'likes'
+    if is_view(t):
+        return 'views'
+    raise Exception('unknown EType in get_db_name')
 
 
 class KafkaConsumerApp:
     def __init__(self, db_path: str):
         self.conn = sqlite3.connect(db_path)
         self.cur = self.conn.cursor()
-        self.cur.execute("DROP TABLE IF EXISTS stats_data;")
-        self.cur.execute("""CREATE TABLE IF NOT EXISTS stats_data (
-                            id INTEGER PRIMARY KEY AUTOINCREMENT,
-                            task_id INTEGER,
-                            username TEXT,
-                            type TEXT
-                            )""")
-        self.conn.commit()
 
         self.logger = logging.getLogger('BEBRA KafkaConsumerApp')
         handler = logging.StreamHandler()
@@ -51,12 +75,16 @@ class KafkaConsumerApp:
                 message = json.loads(msg.value.decode('utf-8'))
                 self.logger.info(f"Received message: {message}")
 
-                self.cur.execute("SELECT 1 FROM stats_data WHERE task_id = ? AND username = ?",
+                message_type = get_type(message['type'])
+                db_name = get_db_name(message_type)
+                self.logger.info(f"DB name on sellected message: {db_name}")
+
+                self.cur.execute(f"SELECT 1 FROM {db_name} WHERE task_id = ? AND username = ?",
                                  (message['task_id'], message['username']))
                 result = self.cur.fetchone()
                 if not result:
                     self.cur.execute(
-                        "INSERT INTO stats_data (task_id, username) VALUES (?, ?)",
+                        f"INSERT INTO {db_name} (task_id, username) VALUES (?, ?)",
                         (message['task_id'], message['username']))
                     if self.cur.rowcount == 0:
                         self.logger.info(
@@ -65,6 +93,7 @@ class KafkaConsumerApp:
                         self.logger.info(
                             f"Inserted message: Task ID: {message['task_id']}, Username: {message['username']}")
                     self.conn.commit()
+
                 consumer.commit()
         except KeyboardInterrupt:
             self.logger.info("Shutting down consumer due to keyboard interrupt.")
