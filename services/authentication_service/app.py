@@ -1,18 +1,22 @@
 import base64
-import grpc
+import json
 import time
-
 from datetime import datetime
 
-from flask import Flask, request, abort
-from flask_restx import Api, Resource, fields
-
+import grpc
+from flask import Flask
+from flask import request
+from flask_restx import Api
+from flask_restx import fields
+from flask_restx import Resource
 from google.protobuf.json_format import MessageToDict
 
-import services.proto.service_pb2_grpc as service_pb2_grpc
-import services.proto.service_pb2 as service_pb2
 import services.authentication_service.database as database
 import services.authentication_service.utils as utils
+import services.proto.service_pb2 as service_pb2
+import services.proto.service_pb2_grpc as service_pb2_grpc
+
+from services.kafka.producer import get_kafka_producer
 
 app = Flask(__name__)
 api = Api(app, version='1.0', title='User Service API',
@@ -25,6 +29,9 @@ TASK_CHANNEL = "task_service:51075"
 class EStatus:
     ERROR = 228
     SUCCESS = 1337
+
+
+KAFKA_PRODUCER = get_kafka_producer()
 
 
 @api.route('/register')
@@ -205,7 +212,7 @@ class UpdateTask(Resource):
     delete_task_model = api.model('DeleteTask', {
         'username': fields.String(required=True),
         'password': fields.String(required=True),
-        'task_id': fields.String(required=True)
+        'task_id': fields.Integer(required=True)
     })
 
     @api.expect(delete_task_model, validate=True)
@@ -264,7 +271,7 @@ class GetTaskByID(Resource):
 
 
 @api.route('/get_tasks')
-class GetTaskByID(Resource):
+class GetTasks(Resource):
     get_tasks_model = api.model('GetTasks', {
         'username': fields.String(required=True),
         'password': fields.String(required=True),
@@ -302,5 +309,78 @@ class GetTaskByID(Resource):
         }, 200
 
 
-if __name__ == 'main':
+@api.route('/send_like')
+class SendLike(Resource):
+    send_like_model = api.model('GetTasks', {
+        'username': fields.String(required=True),
+        'password': fields.String(required=True),
+        'task_id': fields.Integer(required=True),
+    })
+
+    @api.expect(send_like_model, validate=True)
+    def post(self):
+        data = request.json
+        username = data.get('username')
+        password = utils.hash_password(data.get('password'))
+
+        if not utils.verify_user(database, username, password):
+            return {'message': 'Unauthorized, check login credentials'}, 401
+
+        # TODO validation that task_id exist?
+
+        KAFKA_PRODUCER.send('json_topic', json.dumps(request.json).encode('utf-8'))
+
+        return {
+            'message': 'Like succesfully sent to Kafka'
+        }, 200
+
+
+@api.route('/send_view')
+class GetTasks(Resource):
+    send_view_model = api.model('GetTasks', {
+        'username': fields.String(required=True),
+        'password': fields.String(required=True),
+        'task_id': fields.Integer(required=True),
+    })
+
+    @api.expect(send_view_model, validate=True)
+    def post(self):
+        data = request.json
+        username = data.get('username')
+        password = utils.hash_password(data.get('password'))
+
+        if not utils.verify_user(database, username, password):
+            return {'message': 'Unauthorized, check login credentials'}, 401
+
+        # TODO kafka logic
+
+    #
+    # @app.route('/view', methods=['POST'])
+    # def view():
+    #     if 'jwt' not in request.cookies:
+    #         return request.cookies, 401
+    #     jwt = request.cookies['jwt']
+    #     data = server.check_jwt(jwt)
+    #     if data == 'error':
+    #         return "Invalid cookie", 400
+    #     elif data == '':
+    #         return "No such user", 401
+    #     elif data == "token expired":
+    #         return "token expired", 401
+    #
+    #     body = dict()
+    #     if request.data:
+    #         body = json.loads(request.data.decode())
+    #
+    #     json_msg = json.dumps({'task_id': body['id'], 'username': data['username'], 'type': 'view'})
+    #     server.kafka_producer.send('json_topic', json_msg.encode('utf-8'))
+    #
+    #     response = flask.make_response("Successful мшуц")
+    #     response.status_code = 200
+    #     response.headers['Content-Type'] = 'application/json'
+    #
+    #     return response
+
+
+if __name__ == '__main__':
     app.run(debug=True)
