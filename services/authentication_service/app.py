@@ -328,7 +328,9 @@ class SendLike(Resource):
 
         # TODO validation that task_id exist?
 
-        KAFKA_PRODUCER.send('json_topic', json.dumps(request.json).encode('utf-8'))
+        data['type'] = 'like'
+
+        KAFKA_PRODUCER.send('json_topic', json.dumps(data).encode('utf-8'))
 
         return {
             'message': 'Like succesfully sent to Kafka'
@@ -352,34 +354,15 @@ class GetTasks(Resource):
         if not utils.verify_user(database, username, password):
             return {'message': 'Unauthorized, check login credentials'}, 401
 
-        # TODO kafka logic
+        # TODO validation that task_id exist?
 
-    #
-    # @app.route('/view', methods=['POST'])
-    # def view():
-    #     if 'jwt' not in request.cookies:
-    #         return request.cookies, 401
-    #     jwt = request.cookies['jwt']
-    #     data = server.check_jwt(jwt)
-    #     if data == 'error':
-    #         return "Invalid cookie", 400
-    #     elif data == '':
-    #         return "No such user", 401
-    #     elif data == "token expired":
-    #         return "token expired", 401
-    #
-    #     body = dict()
-    #     if request.data:
-    #         body = json.loads(request.data.decode())
-    #
-    #     json_msg = json.dumps({'task_id': body['id'], 'username': data['username'], 'type': 'view'})
-    #     server.kafka_producer.send('json_topic', json_msg.encode('utf-8'))
-    #
-    #     response = flask.make_response("Successful мшуц")
-    #     response.status_code = 200
-    #     response.headers['Content-Type'] = 'application/json'
-    #
-    #     return response
+        data['type'] = 'view'
+
+        KAFKA_PRODUCER.send('json_topic', json.dumps(data).encode('utf-8'))
+
+        return {
+            'message': 'Like succesfully sent to Kafka'
+        }, 200
 
 
 if __name__ == '__main__':

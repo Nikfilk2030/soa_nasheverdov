@@ -1,37 +1,41 @@
-def create_likes():
-    database = '/data/stats_data.db'
+import sqlite3
 
-    conn = sqlite3.connect(database)
-    cursor = conn.cursor()
+import services.kafka.consumer as kafka_consumer
 
-    cursor.execute("DROP TABLE IF EXISTS stats_data;")
+DATABASE = '/data/stats_data.db'
+
+
+def get_connection(database):
+    return sqlite3.connect(database)
+
+
+def create_likes(cursor):
+    cursor.execute("DROP TABLE IF EXISTS likes;")
     cursor.execute('''
-        CREATE TABLE stats_data (
+        CREATE TABLE likes (
             task_id INTEGER PRIMARY KEY, 
-            username TEXT, 
-            type TEXT
+            username TEXT
         );
-    ''')  # TODO type на всякий случай, мб не нужен
+    ''')
 
+
+def create_views(cursor):
+    cursor.execute("DROP TABLE IF EXISTS views;")
+    cursor.execute('''
+        CREATE TABLE views (
+            task_id INTEGER PRIMARY KEY,
+            username TEXT
+        );
+    ''')
+
+
+def run_kafka():
+    conn = get_connection(DATABASE)
+
+    cursor = conn.cursor()
+    create_likes(cursor)
+    create_views(cursor)
     conn.commit()
-    conn.close()
 
-
-# def create_views():
-#     database = '/data/views.db'
-#
-#     conn = sqlite3.connect(database)
-#     cursor = conn.cursor()
-#
-#     cursor.execute("DROP TABLE IF EXISTS views;")
-#     cursor.execute('''
-#         CREATE TABLE views (
-#             task_id INTEGER PRIMARY KEY,
-#             username TEXT,
-#             type TEXT
-#         );
-#     ''')  # TODO type на всякий случай, мб не нужен
-#
-#     conn.commit()
-#     conn.close()
-
+    consumer = kafka_consumer.KafkaConsumerApp(DATABASE)
+    consumer.consume()
