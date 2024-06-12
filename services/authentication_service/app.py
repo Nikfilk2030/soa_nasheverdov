@@ -361,7 +361,7 @@ class GetTasks(Resource):
         KAFKA_PRODUCER.send('json_topic', json.dumps(data).encode('utf-8'))
 
         return {
-            'message': 'Like succesfully sent to Kafka'
+            'message': 'View succesfully sent to Kafka'
         }, 200
 
 

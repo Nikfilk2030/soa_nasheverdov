@@ -5,8 +5,11 @@ import time
 
 import kafka
 
-
-KAFKA_SLEEP_TIME = 5  # seconds
+from services.common.constants import KAFKA_SLEEP_TIME
+from services.kafka.utils import get_db_name
+from services.kafka.utils import get_type
+from services.kafka.utils import insert_into_db
+from services.kafka.utils import is_duplicate
 
 
 def create_kafka_consumer():
@@ -26,39 +29,10 @@ def create_kafka_consumer():
             time.sleep(KAFKA_SLEEP_TIME)
 
 
-class EType:
-    Like = 1
-    View = 2
-
-
-def get_type(t: str) -> int:
-    if t == 'like':
-        return EType.Like
-    if t == 'view':
-        return EType.View
-    raise Exception('unknown EType in get_type')
-
-
-def is_like(t: int) -> bool:
-    return t == EType.Like
-
-
-def is_view(t: int) -> bool:
-    return t == EType.View
-
-
-def get_db_name(t: int) -> str:
-    if is_like(t):
-        return 'likes'
-    if is_view(t):
-        return 'views'
-    raise Exception('unknown EType in get_db_name')
-
-
 class KafkaConsumerApp:
     def __init__(self, db_path: str):
         self.conn = sqlite3.connect(db_path)
-        self.cur = self.conn.cursor()
+        self.cursor = self.conn.cursor()
 
         self.logger = logging.getLogger('BEBRA KafkaConsumerApp')
         handler = logging.StreamHandler()
@@ -79,20 +53,19 @@ class KafkaConsumerApp:
                 db_name = get_db_name(message_type)
                 self.logger.info(f"DB name on sellected message: {db_name}")
 
-                self.cur.execute(f"SELECT 1 FROM {db_name} WHERE task_id = ? AND username = ?",
-                                 (message['task_id'], message['username']))
-                result = self.cur.fetchone()
-                if not result:
-                    self.cur.execute(
-                        f"INSERT INTO {db_name} (task_id, username) VALUES (?, ?)",
-                        (message['task_id'], message['username']))
-                    if self.cur.rowcount == 0:
+                if is_duplicate(self.cursor, db_name, message):
+                    self.logger.info(
+                        f"Got duplicate message: Task ID: {message['task_id']}, Username: {message['username']}")
+                else:
+                    success: bool = insert_into_db(self.cursor, db_name, message)
+                    if not success:
                         self.logger.info(
                             f"ERROR wile inserting message: Task ID: {message['task_id']}, Username: {message['username']}")
                     else:
                         self.logger.info(
                             f"Inserted message: Task ID: {message['task_id']}, Username: {message['username']}")
                     self.conn.commit()
+
 
                 consumer.commit()
         except KeyboardInterrupt:

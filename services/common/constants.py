@@ -1,1 +1,1 @@
-KAFKA_SLEEP_TIME = 5  # seconds
+KAFKA_SLEEP_TIME = 1  # seconds
